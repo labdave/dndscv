@@ -27,6 +27,14 @@ for (i in myfilelist) {
   x = x[which(x[,rc] >= 0.3),] # WARNING: hard-coded!!!
   # Filter based on the mutation being exonic
   x = x[x$ExonicFunc.refGene != ".",]
+  # Apply QC filer
+  quality.variants.moderate <- !((as.numeric(x$QD)<2 & !is.na(x$QD)) | 
+                                   (as.numeric(x$FS)>100 & !is.na(x$FS)) | 
+                                   (as.numeric(x$SOR)>3 & !is.na(x$SOR)) | 
+                                   (as.numeric(x$MQ)<40 & !is.na(x$MQ)) |
+                                   (as.numeric(x$MQRankSum)<(-2.5) & !is.na(x$MQRankSum)) | 
+                                   (as.numeric(x$ReadPosRankSum)<(-8) & !is.na(x$ReadPosRankSum)))
+  x = x[quality.variants.moderate,]
   # Check if any mutations passed filters
   if (nrow(x) > 0) {
     # Add sample-name column
@@ -52,6 +60,9 @@ library("dndscv")
 #dndsout = dndscv(all_vcfs,refdb = "~/tmp/RefCDS_human_GRCh38.p12.rda", cv=NULL)
 dndsout = dndscv(all_vcfs,refdb = supp_file, cv=NULL)
 
-# Save Output
+# Save Outputs
+# Main table
 write.table(dndsout$sel_cv,paste(output.prefix,"tsv",sep="."),sep="\t",quote=F,col.names = T,row.names = F)
 print(output.prefix)
+# RDS object
+saveRDS(dndsout, file = paste(output.prefix, "RDS",sep="."))

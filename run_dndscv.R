@@ -35,6 +35,15 @@ for (i in myfilelist) {
                                    (as.numeric(x$MQRankSum)<(-2.5) & !is.na(x$MQRankSum)) | 
                                    (as.numeric(x$ReadPosRankSum)<(-8) & !is.na(x$ReadPosRankSum)))
   x = x[quality.variants.moderate,]
+  # Identify rare variants, add new column and filter on it 
+  pop.cols <- grep("gnomAD|ExAC|popfreq_max",colnames(x),value=T)
+  pop.freq.data = x[,pop.cols] 
+  pop.freq.data[is.na(pop.freq.data)] <- 0
+  pop.freq.max.all <- apply(pop.freq.data,1,max)
+  x = cbind(x,pop.freq.max.all)
+  rare.variants = (as.numeric(x$pop.freq.max.all)<=0.001)
+  x = x[rare.variants,]
+
   # Check if any mutations passed filters
   if (nrow(x) > 0) {
     # Add sample-name column

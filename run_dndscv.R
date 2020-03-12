@@ -21,7 +21,7 @@ all_vcfs = data.frame()
 # Loop through recoded-vcfs converting to dndscv format
 for (i in myfilelist) {
   print(paste("Reading", i, "..."))
-  x = read.table(i, sep = "\t",header=T, stringsAsFactors = F)
+  x = read.table(i,sep="\t",header=T,check.names=F,na.strings=c(".","","NA"),comment.char="",quote="",as.is=T)
   # Filter based on read-count
   rc = names(x)[(ncol(x)-3)] # (assumes read-count column is 4th from last)
   x = x[which(x[,rc] >= 0.3),] # WARNING: hard-coded!!!
